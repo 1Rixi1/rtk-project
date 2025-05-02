@@ -4,8 +4,8 @@ import {
   createAppSelector,
   useAppDispatch,
   useAppSelector,
-  UserId,
-} from "../store.ts";
+} from "../../store.ts";
+import { UserId } from "./users.slice.ts";
 
 const selectUsersList = createAppSelector(
   (state: AppState) => state.users.ids,
@@ -14,6 +14,7 @@ const selectUsersList = createAppSelector(
   (ids, entities, sortType) =>
     ids
       .map((id) => entities[id])
+      .filter((user) => user !== undefined)
       .sort((a, b) => {
         if (sortType === "asc") {
           return a.name.localeCompare(b.name);
@@ -57,6 +58,8 @@ const UserItem = ({ userId }: { userId: UserId }) => {
 
   const user = useAppSelector((state) => state.users.entities[userId]);
 
+  if (!user) return null;
+
   const handleUser = () => {
     dispatch({ type: "SELECTED_USER", payload: { userId: user.id } });
   };
@@ -72,7 +75,7 @@ const SelectedUser = ({ userId }: { userId: UserId }) => {
   const handleBack = () => {
     dispatch({ type: "REMOVE_SELECTED_USER" });
   };
-
+  if (!user) return null;
   return (
     <div>
       <p>{user.name}</p>

@@ -1,63 +1,45 @@
-import {AppState} from "../../store.ts";
+import { createAction, createReducer } from "@reduxjs/toolkit";
 
 const initialCountersState: CounterState = {};
 
 const initialCounter: Counter = {
-    counter: 0,
+  counter: 0,
 };
-
-
-//REDUCER
-export function CountersReducer(state = initialCountersState, action: ActionsType) {
-  switch (action.type) {
-    case "INCREMENT": {
-      const { counterId } = action.payload;
-
-      const currentCounter = state[counterId] || initialCounter;
-
-      return {
-        ...state,
-        [counterId]: {
-          ...currentCounter,
-          counter: currentCounter.counter + 1,
-        },
-      };
-    }
-
-    case "DECREMENT": {
-      const { counterId } = action.payload;
-
-      const currentCounter = state[counterId] || initialCounter;
-
-      return {
-        ...state,
-        [counterId]: {
-          ...currentCounter,
-          counter: currentCounter.counter - 1,
-        },
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-}
 
 //ACTIONS
-type ActionsType = IncrementAction | DecrementAction;
 
+export const incrementAction = createAction<{ counterId: CounterId }>(
+  "counters/increment",
+);
+export const decrementAction = createAction<{ counterId: CounterId }>(
+  "counters/decrement",
+);
 
-export type IncrementAction = {
-    type: "INCREMENT";
-    payload: { counterId: string };
-};
+//REDUCER
 
-export type DecrementAction = {
-    type: "DECREMENT";
-    payload: { counterId: string };
-};
+export const countersReducer = createReducer(
+  initialCountersState,
+  (builder) => {
+    builder.addCase(incrementAction, (state, action) => {
+      const { counterId } = action.payload;
 
+      if (!state[counterId]) {
+        state[counterId] = { ...initialCounter };
+      }
+
+      state[counterId].counter++;
+    });
+    builder.addCase(decrementAction, (state, action) => {
+      const { counterId } = action.payload;
+
+      if (!state[counterId]) {
+        state[counterId] = { ...initialCounter };
+      }
+
+      state[counterId].counter--;
+    });
+  },
+);
 
 //TYPE
 
@@ -69,9 +51,8 @@ type Counter = {
 
 export type CounterId = string;
 
-
 //SELECTORS
 
-export const selectCounter = (state: AppState, counterId: string) => {
-  return state.counters[counterId];
+export const selectCounter = (state: CounterState, counterId: string) => {
+  return state[counterId];
 };

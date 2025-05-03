@@ -1,23 +1,13 @@
-import {
-  combineReducers,
-  configureStore,
-  createSelector,
-} from "@reduxjs/toolkit";
+import { configureStore, createSelector } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  StorageUserAction,
-  usersList,
-  UsersReducer,
-} from "./modules/users/users.slice.ts";
-import { CountersReducer } from "./modules/counters/counters.slice.ts";
-
-const reducer = combineReducers({
-  users: UsersReducer,
-  counters: CountersReducer,
-});
+import { usersList, usersReducer } from "./modules/users/users.slice.ts";
+import { countersReducer } from "./modules/counters/counters.slice.ts";
 
 export const store = configureStore({
-  reducer: reducer,
+  reducer: {
+    [usersReducer.name]: usersReducer.reducer,
+    counters: countersReducer,
+  },
 });
 
 export type AppState = ReturnType<typeof store.getState>;
@@ -29,7 +19,4 @@ export const createAppSelector = createSelector.withTypes<AppState>();
 
 //DATA
 
-store.dispatch({
-  type: "STORAGE_USER",
-  payload: { users: usersList },
-} satisfies StorageUserAction);
+store.dispatch(usersReducer.actions.storage({ users: usersList }));

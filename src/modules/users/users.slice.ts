@@ -1,3 +1,5 @@
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 const initialUsersState: UsersState = {
   entities: {},
   ids: [],
@@ -5,45 +7,54 @@ const initialUsersState: UsersState = {
 };
 
 //REDUCER
-export function UsersReducer(state = initialUsersState, action: ActionsType) {
-  switch (action.type) {
-    case "STORAGE_USER": {
+
+export const usersReducer = createSlice({
+  name: "users",
+  initialState: initialUsersState,
+  selectors: {
+    selectUserId: (state) => state.selectedUserId,
+    selectSortedUsers: createSelector(
+      (state: UsersState) => state.entities,
+      (state: UsersState) => state.ids,
+      (_: UsersState, sortType: "asc" | "desc") => sortType,
+      (entities, ids, sortType) =>
+        ids
+          .map((id) => entities[id])
+          .filter((user) => user !== undefined)
+          .sort((a, b) => {
+            if (sortType === "asc") {
+              return a.name.localeCompare(b.name);
+            } else {
+              return b.name.localeCompare(a.name);
+            }
+          }),
+    ),
+  },
+  reducers: {
+    storage: (state, action: PayloadAction<{ users: User[] }>) => {
       const { users } = action.payload;
 
-      return {
-        ...state,
-        entities: users.reduce(
-          (acc, user) => {
-            acc[user.id] = user;
-            return acc;
-          },
-          {} as Record<UserId, User>,
-        ),
-        ids: users.map((user) => user.id),
-      };
-    }
+      state.entities = users.reduce(
+        (acc, user) => {
+          acc[user.id] = user;
 
-    case "SELECTED_USER": {
+          return acc;
+        },
+        {} as Record<UserId, User>,
+      );
+
+      state.ids = users.map((user) => user.id);
+    },
+    select: (state, action: PayloadAction<{ userId: UserId }>) => {
       const { userId } = action.payload;
 
-      return {
-        ...state,
-        selectedUserId: userId,
-      };
-    }
-
-    case "REMOVE_SELECTED_USER": {
-      return {
-        ...state,
-        selectedUserId: undefined,
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-}
+      state.selectedUserId = userId;
+    },
+    removeSelect: (state) => {
+      state.selectedUserId = undefined;
+    },
+  },
+});
 
 //TYPE
 
@@ -59,30 +70,6 @@ export type User = {
   name: string;
   description: string;
   id: string;
-};
-
-//ACTIONS
-type ActionsType =
-  | StorageUserAction
-  | SelectedUserAction
-  | RemoveSelectedUserAction;
-
-export type StorageUserAction = {
-  type: "STORAGE_USER";
-  payload: {
-    users: User[];
-  };
-};
-
-export type SelectedUserAction = {
-  type: "SELECTED_USER";
-  payload: {
-    userId: UserId;
-  };
-};
-
-export type RemoveSelectedUserAction = {
-  type: "REMOVE_SELECTED_USER";
 };
 
 //DATA

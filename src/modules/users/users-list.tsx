@@ -1,39 +1,19 @@
 import { useState } from "react";
-import {
-  AppState,
-  createAppSelector,
-  useAppDispatch,
-  useAppSelector,
-} from "../../store.ts";
-import { UserId } from "./users.slice.ts";
-
-const selectUsersList = createAppSelector(
-  (state: AppState) => state.users.ids,
-  (state: AppState) => state.users.entities,
-  (_: AppState, sortType: "asc" | "desc") => sortType,
-  (ids, entities, sortType) =>
-    ids
-      .map((id) => entities[id])
-      .filter((user) => user !== undefined)
-      .sort((a, b) => {
-        if (sortType === "asc") {
-          return a.name.localeCompare(b.name);
-        } else {
-          return b.name.localeCompare(a.name);
-        }
-      }),
-);
-
-const selectUserId = (state: AppState) => state.users.selectedUserId;
+import { useAppDispatch, useAppSelector } from "../../store.ts";
+import { UserId, usersReducer } from "./users.slice.ts";
 
 const UsersList = () => {
   console.log("RENDER USER LIST");
 
   const [sortType, setSortType] = useState<"asc" | "desc">("asc");
 
-  const users = useAppSelector((state) => selectUsersList(state, sortType));
+  const users = useAppSelector((state) =>
+    usersReducer.selectors.selectSortedUsers(state, sortType),
+  );
 
-  const selectSelectUserId = useAppSelector(selectUserId);
+  const selectSelectUserId = useAppSelector(
+    usersReducer.selectors.selectUserId,
+  );
 
   return (
     <>
@@ -61,7 +41,7 @@ const UserItem = ({ userId }: { userId: UserId }) => {
   if (!user) return null;
 
   const handleUser = () => {
-    dispatch({ type: "SELECTED_USER", payload: { userId: user.id } });
+    dispatch(usersReducer.actions.select({ userId }));
   };
 
   return <li onClick={handleUser}>{user.name}</li>;
@@ -73,7 +53,7 @@ const SelectedUser = ({ userId }: { userId: UserId }) => {
   const user = useAppSelector((state) => state.users.entities[userId]);
 
   const handleBack = () => {
-    dispatch({ type: "REMOVE_SELECTED_USER" });
+    dispatch(usersReducer.actions.removeSelect());
   };
   if (!user) return null;
   return (

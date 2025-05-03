@@ -1,35 +1,31 @@
 import { useAppDispatch, useAppSelector } from "../../store.ts";
 
-import { CounterId } from "./counters.slice.ts";
-
 import {
-  DecrementAction,
-  IncrementAction,
-  selectCounter,
+  CounterId,
+  decrementAction,
+  incrementAction,
 } from "./counters.slice.ts";
+
+import { selectCounter } from "./counters.slice.ts";
 
 export const Counter = ({ counterId }: { counterId: CounterId }) => {
   const dispatch = useAppDispatch();
 
-  const counter = useAppSelector((state) => selectCounter(state, counterId));
+  const selectCurrentCounter = useAppSelector((state) =>
+    selectCounter(state.counters, counterId),
+  );
 
   const handleIncrement = () => {
-    dispatch({
-      type: "INCREMENT",
-      payload: { counterId },
-    } satisfies IncrementAction);
+    dispatch(decrementAction({ counterId }));
   };
 
   const handleDecrement = () => {
-    dispatch({
-      type: "DECREMENT",
-      payload: { counterId },
-    } satisfies DecrementAction);
+    dispatch(incrementAction({ counterId }));
   };
 
   return (
     <>
-      <p>{counter?.counter}</p>
+      <p>{selectCurrentCounter?.counter}</p>
 
       <button onClick={handleIncrement}>+</button>
 

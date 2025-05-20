@@ -4,11 +4,12 @@ const initialUsersState: UsersState = {
   entities: {},
   ids: [],
   selectedUserId: undefined,
+  fetchUsersStatus: "idle",
 };
 
 //REDUCER
 
-export const usersReducer = createSlice({
+export const usersSlice = createSlice({
   name: "users",
   initialState: initialUsersState,
   selectors: {
@@ -27,30 +28,36 @@ export const usersReducer = createSlice({
             } else {
               return b.name.localeCompare(a.name);
             }
-          }),
+          })
     ),
+    selectIsFetchUsersIdle: (state) => state.fetchUsersStatus === "idle",
+    selectIsFetchUsersPending: (state) => state.fetchUsersStatus === "pending",
   },
   reducers: {
-    storage: (state, action: PayloadAction<{ users: User[] }>) => {
+    fetchUsersPending: (state) => {
+      state.fetchUsersStatus = "pending";
+    },
+    fetchUsersSuccess: (state, action: PayloadAction<{ users: User[] }>) => {
       const { users } = action.payload;
+      state.fetchUsersStatus = "success";
 
-      state.entities = users.reduce(
-        (acc, user) => {
-          acc[user.id] = user;
+      state.entities = users.reduce((acc, user) => {
+        acc[user.id] = user;
 
-          return acc;
-        },
-        {} as Record<UserId, User>,
-      );
+        return acc;
+      }, {} as Record<UserId, User>);
 
       state.ids = users.map((user) => user.id);
     },
-    select: (state, action: PayloadAction<{ userId: UserId }>) => {
+    fetchUsersError: (state) => {
+      state.fetchUsersStatus = "error";
+    },
+    selectUsers: (state, action: PayloadAction<{ userId: UserId }>) => {
       const { userId } = action.payload;
 
       state.selectedUserId = userId;
     },
-    removeSelect: (state) => {
+    removeSelectUser: (state) => {
       state.selectedUserId = undefined;
     },
   },
@@ -62,6 +69,7 @@ type UsersState = {
   entities: Record<UserId, User | undefined>;
   ids: UserId[];
   selectedUserId: UserId | undefined;
+  fetchUsersStatus: "idle" | "pending" | "success" | "error";
 };
 
 export type UserId = string;
@@ -71,12 +79,3 @@ export type User = {
   description: string;
   id: string;
 };
-
-//DATA
-export const usersList = Array.from({ length: 3000 }, (_, idx) => {
-  return {
-    id: `user${idx + 11}`,
-    name: `user ${idx + 11}`,
-    description: `user ${idx + 11}`,
-  } as User;
-});

@@ -4,23 +4,22 @@ import {
   CounterId,
   decrementAction,
   incrementAction,
+  selectCounter,
 } from "./counters.slice.ts";
-
-import { selectCounter } from "./counters.slice.ts";
 
 export const Counter = ({ counterId }: { counterId: CounterId }) => {
   const dispatch = useAppDispatch();
 
   const selectCurrentCounter = useAppSelector((state) =>
-    selectCounter(state.counters, counterId),
+    selectCounter(state.counters, counterId)
   );
 
   const handleIncrement = () => {
-    dispatch(decrementAction({ counterId }));
+    dispatch(incrementAction({ counterId }));
   };
 
   const handleDecrement = () => {
-    dispatch(incrementAction({ counterId }));
+    dispatch(decrementAction({ counterId }));
   };
 
   return (

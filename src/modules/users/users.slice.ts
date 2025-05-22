@@ -3,7 +3,6 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 const initialUsersState: UsersState = {
   entities: {},
   ids: [],
-  selectedUserId: undefined,
   fetchUsersStatus: "idle",
 };
 
@@ -13,7 +12,6 @@ export const usersSlice = createSlice({
   name: "users",
   initialState: initialUsersState,
   selectors: {
-    selectUserId: (state) => state.selectedUserId,
     selectSortedUsers: createSelector(
       (state: UsersState) => state.entities,
       (state: UsersState) => state.ids,
@@ -21,7 +19,7 @@ export const usersSlice = createSlice({
       (entities, ids, sortType) =>
         ids
           .map((id) => entities[id])
-          .filter((user) => user !== undefined)
+          .filter((user): user is User => !!user)
           .sort((a, b) => {
             if (sortType === "asc") {
               return a.name.localeCompare(b.name);
@@ -32,6 +30,7 @@ export const usersSlice = createSlice({
     ),
     selectIsFetchUsersIdle: (state) => state.fetchUsersStatus === "idle",
     selectIsFetchUsersPending: (state) => state.fetchUsersStatus === "pending",
+    selectUserById: (state, userId) => state.entities[userId],
   },
   reducers: {
     fetchUsersPending: (state) => {
@@ -52,14 +51,6 @@ export const usersSlice = createSlice({
     fetchUsersError: (state) => {
       state.fetchUsersStatus = "error";
     },
-    selectUsers: (state, action: PayloadAction<{ userId: UserId }>) => {
-      const { userId } = action.payload;
-
-      state.selectedUserId = userId;
-    },
-    removeSelectUser: (state) => {
-      state.selectedUserId = undefined;
-    },
   },
 });
 
@@ -68,7 +59,6 @@ export const usersSlice = createSlice({
 type UsersState = {
   entities: Record<UserId, User | undefined>;
   ids: UserId[];
-  selectedUserId: UserId | undefined;
   fetchUsersStatus: "idle" | "pending" | "success" | "error";
 };
 

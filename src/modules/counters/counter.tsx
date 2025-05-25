@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "../../store.ts";
+import { useAppDispatch, useAppSelector } from "../../shared/redux.ts";
 
 import {
   CounterId,

@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../store.ts";
+import { useState } from "react";
+import { useAppSelector } from "../../shared/redux.ts";
 import { usersSlice } from "./users.slice.ts";
 import UserItem from "./user-item.tsx";
-import { fetchUsers } from "./model/fetch-users.ts";
 
 const UsersList = () => {
-  const dispatch = useAppDispatch();
-
   const [sortType, setSortType] = useState<"asc" | "desc">("asc");
 
   const users = useAppSelector((state) =>
@@ -16,10 +13,6 @@ const UsersList = () => {
   const isPending = useAppSelector(
     usersSlice.selectors.selectIsFetchUsersPending
   );
-
-  useEffect(() => {
-    dispatch(fetchUsers());
-  });
 
   if (isPending) {
     return <div>Loading ...</div>;

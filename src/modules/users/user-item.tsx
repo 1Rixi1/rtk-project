@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useAppSelector } from "../../store.ts";
+import { useAppSelector } from "../../shared/redux.ts";
 import { UserId } from "./users.slice.ts";
 
 const UserItem = ({ userId }: { userId: UserId }) => {
